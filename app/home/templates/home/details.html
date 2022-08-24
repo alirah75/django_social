@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %} Details {% endblock %}
+
+{% block content %}
+	<p>{{ post.user.username }} </p><br>
+	<h2> {{ post.slug }} </h2>
+	<p> {{ post.body }} </p>
+	<small> updated: {{ post.updated |date:"Y - M - d" }} </small><br>
+	<small> created: {{ post.created |date:"Y - M - d" }} </small>
+{% endblock %}

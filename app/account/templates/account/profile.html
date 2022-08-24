@@ -1,14 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %} Home {% endblock %}
+{% block title %} Profile {% endblock %}
 
 {% block content %}
+    <h2 class="text-center">{{ user.username }}</h2>
+
     <div class="card">
-        Home Page ...
         {% if request.user.is_authenticated %}
             {% for post in posts %}
                 <a href="{% url 'home:post_detail' post.id post.slug %}" class="card-body">{{ post.slug }}</a>
             {% endfor %}
         {% endif %}
     </div>
+
 {% endblock %}

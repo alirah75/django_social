@@ -10,6 +10,9 @@
 
     {% include 'inc/navbar.html' %}
     <div class="jumbotron">
+        {% if request.user.is_authenticated %}
+            <p>{{ request.user }}</p><br>
+        {% endif %}
         {% include 'inc/messages.html' %}
         {% block content %}
         {% endblock %}
