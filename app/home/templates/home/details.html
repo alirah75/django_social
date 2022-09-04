@@ -3,7 +3,13 @@
 {% block title %} Details {% endblock %}
 
 {% block content %}
-	<p>{{ post.user.username }} </p><br>
+
+	{% if request.user.username == post.user.username %}
+		<a href="{% url 'home:post_delete' post.id %}" class="btn btn-danger">Delete Post</a>
+		<a href="{% url 'home:post_update' post.id %}" class="btn btn-info">Update Post</a><br>
+	{% endif %}
+
+	<a href="{% url 'account:profile' post.user.id %}">{{ post.user.username }} </a><br>
 	<h2> {{ post.slug }} </h2>
 	<p> {{ post.body }} </p>
 	<small> updated: {{ post.updated |date:"Y - M - d" }} </small><br>
