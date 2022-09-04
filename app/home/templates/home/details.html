@@ -13,5 +13,25 @@
 	<h2> {{ post.slug }} </h2>
 	<p> {{ post.body }} </p>
 	<small> updated: {{ post.updated |date:"Y - M - d" }} </small><br>
-	<small> created: {{ post.created |date:"Y - M - d" }} </small>
+	<small> created: {{ post.created |date:"Y - M - d" }} </small><hr/>
+
+	{% if request.user.is_authenticated %}
+		<form action="" method="post" novalidate>
+			{% csrf_token %}
+			{{ form.as_p }}
+			<input type="submit" value="Send">
+		</form>
+	{% else %}
+		<p class="alert alert-danger">Only logged in users can comment.</p>
+	{% endif%}
+
+	{% for comment in comments %}
+		<div class="card bg-dark text-white">
+			<p class="card-header">{{ comment.user }} | {{ comment.created | timesince }}</p>
+			<p class="card-body">{{ comment.body }}</p>
+		</div>
+	{% empty %}
+		<p>No comments yet!</p>
+	{% endfor %}
+
 {% endblock %}
