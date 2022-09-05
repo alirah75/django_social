@@ -1,4 +1,6 @@
 from django import forms
+from pyexpat import model
+
 from .models import Post, Comment
 
 
@@ -15,3 +17,9 @@ class CommentCreatedForm(forms.ModelForm):
         widget = {
             'body': forms.Textarea(attrs={'class': 'form-control'})
         }
+
+
+class CommentReplyForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ('body',)

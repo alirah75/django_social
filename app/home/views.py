@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from .models import Post
+from .models import Post, Comment, Like
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import PostCreateUpdateForm, CommentCreatedForm
+from .forms import PostCreateUpdateForm, CommentCreatedForm, CommentReplyForm
 from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -19,6 +19,7 @@ class HomeView(View):
 
 class PostDetailView(View):
     form_class = CommentCreatedForm
+    form_reply_class = CommentReplyForm
 
     def setup(self, request, *args, **kwargs):
         self.post_instance = get_object_or_404(Post, pk=kwargs['post_id'], slug=kwargs['post_slug'])
@@ -26,7 +27,12 @@ class PostDetailView(View):
 
     def get(self, request, post_id, post_slug):
         comments = self.post_instance.pcomments.filter(is_reply=False)
-        return render(request, 'home/details.html', {'post': self.post_instance, 'comments': comments, 'form': self.form_class})
+        disable_like = False
+        if request.user.is_authenticated and self.post_instance.user_can_like(request.user):
+            disable_like = True
+        return render(request, 'home/details.html', {'post': self.post_instance, 'comments': comments,
+                                                     'form': self.form_class, 'reply_form': self.form_reply_class,
+                                                     'disable_like': disable_like})
 
     @method_decorator(login_required)
     def post(self, request, *args, **kwargs):
@@ -38,6 +44,7 @@ class PostDetailView(View):
             new_comment.save()
             messages.success(request, 'Your comment submit successfully', 'success')
             return redirect('home:post_detail', self.post_instance.id, self.post_instance.slug)
+
 
 class PostDeleteView(LoginRequiredMixin, View):
     def get(self, request, post_id):
@@ -97,3 +104,31 @@ class PoseCreateView(LoginRequiredMixin, View):
             new_post.save()
             messages.success(request, 'create new post', 'success')
             return redirect('home:post_detail', new_post.id, new_post.slug)
+
+
+class PostAddReplyView(LoginRequiredMixin, View):
+    def post(self, request, post_id, comment_id):
+        form = CommentReplyForm(request.POST)
+        post = get_object_or_404(Post, pk=post_id)
+        comment = get_object_or_404(Comment, pk=comment_id)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.user = request.user
+            reply.post = post
+            reply.reply = comment
+            reply.is_reply = True
+            reply.save()
+            messages.success(request, 'your reply submited successfully', 'success')
+        return redirect('home:post_detail', post.id, post.slug)
+
+
+class LikePostView(LoginRequiredMixin, View):
+    def get(self, request, post_id):
+        post = get_object_or_404(Post, pk=post_id)
+        like = Like.objects.filter(user=request.user, post=post)
+        if like.exists():
+            messages.error(request, 'you already liked this post', 'danger')
+        else:
+            Like.objects.create(post=post, user=request.user)
+            messages.success(request, 'you like this post', 'success')
+        return redirect('home:post_detail', post.id, post.slug)

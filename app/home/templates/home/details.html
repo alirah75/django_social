@@ -5,6 +5,7 @@
 {% block content %}
 
 	{% if request.user.username == post.user.username %}
+
 		<a href="{% url 'home:post_delete' post.id %}" class="btn btn-danger">Delete Post</a>
 		<a href="{% url 'home:post_update' post.id %}" class="btn btn-info">Update Post</a><br>
 	{% endif %}
@@ -16,11 +17,12 @@
 	<small> created: {{ post.created |date:"Y - M - d" }} </small><hr/>
 
 	{% if request.user.is_authenticated %}
+		<a href="{% url 'home:like' post.id %}" class="{% if disable_like %} disabled {% endif %} btn btn-primary col-md-2">Like {{ post.like_count }}</a></br>
 		<form action="" method="post" novalidate>
 			{% csrf_token %}
 			{{ form.as_p }}
 			<input type="submit" value="Send">
-		</form>
+		</form><br>
 	{% else %}
 		<p class="alert alert-danger">Only logged in users can comment.</p>
 	{% endif%}
@@ -29,7 +31,21 @@
 		<div class="card bg-dark text-white">
 			<p class="card-header">{{ comment.user }} | {{ comment.created | timesince }}</p>
 			<p class="card-body">{{ comment.body }}</p>
-		</div>
+
+			{% if request.user.is_authenticated %}
+				<form action="{% url 'home:add_reply' post.id comment.id %}" method="post" novalidate>
+					{% csrf_token %}
+					{{ form.as_p }}
+					<input type="submit" value="Reply">
+				</form>
+			{% endif%}
+
+			{% with replies=comment.rcomments.all %}
+				{% for reply in replies %}
+					<p class="bg-primary p-3 m-2"> {{ reply.user }} <br/> {{ reply.body }} </p>
+				{% endfor %}
+			{% endwith %}
+		</div><br>
 	{% empty %}
 		<p>No comments yet!</p>
 	{% endfor %}
