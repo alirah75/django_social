@@ -3,8 +3,13 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
+
+    <form action="" method="get">
+        {{ search_form.as_p }}
+        <input type="submit" value="Search">
+    </form><br><br>
+
     <div class="card">
-        Home Page ...
         {% if request.user.is_authenticated %}
             {% for post in posts %}
                 <a href="{{ post.get_absolute_url }}" class="card-body">{{ post.slug }}</a>
